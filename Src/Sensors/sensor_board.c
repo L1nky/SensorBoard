@@ -8,8 +8,8 @@
 #include "stm32f4xx_hal.h"
 #include "cmsis_os.h"
 
-#include "inttypes.h"
-#include "math.h"
+#include <inttypes.h>
+#include <math.h>
 
 int8_t init_bme();
 int8_t init_bno();
@@ -57,14 +57,14 @@ void TK_sensor_board(void const * argument)
 
 	INFO("Initialisation completed successfully\n");
 	state = RUNNING;
-	led_set_rgb(0, 1000, 0);
+	led_set_rgb(0, 50, 0);
 
 	for(;;)
 	{
 		if(fetch_bme() != BME280_OK || fetch_bno() != BNO055_SUCCESS)
 			led_set_rgb(0, 0, 1000);
 		else
-			led_set_rgb(0, 1000, 0);
+			led_set_rgb(0, 50, 0);
 		osDelay(10);
 	}
 }
@@ -161,12 +161,12 @@ int8_t fetch_bno()
 
 	if(!rslt)
 	{
-		setFrame((uint32_t)accel.x, DATA_ID_ACCELERATION_X, HAL_GetTick());
-		setFrame((uint32_t)accel.y, DATA_ID_ACCELERATION_Y, HAL_GetTick());
-		setFrame((uint32_t)accel.z, DATA_ID_ACCELERATION_Z, HAL_GetTick());
-		setFrame((uint32_t)(1000*gyro.x), DATA_ID_GYRO_X, HAL_GetTick());
-		setFrame((uint32_t)(1000*gyro.y), DATA_ID_GYRO_Y, HAL_GetTick());
-		setFrame((uint32_t)(1000*gyro.z), DATA_ID_GYRO_Z, HAL_GetTick());
+		setFrame((int32_t) accel.x, DATA_ID_ACCELERATION_X, HAL_GetTick());
+		setFrame((int32_t) accel.y, DATA_ID_ACCELERATION_Y, HAL_GetTick());
+		setFrame((int32_t) accel.z, DATA_ID_ACCELERATION_Z, HAL_GetTick());
+		setFrame((int32_t)(1000*gyro.x), DATA_ID_GYRO_X, HAL_GetTick());
+		setFrame((int32_t)(1000*gyro.y), DATA_ID_GYRO_Y, HAL_GetTick());
+		setFrame((int32_t)(1000*gyro.z), DATA_ID_GYRO_Z, HAL_GetTick());
 		if(!cntr)
 		{
 			sprintf(buf, "Accel: [%f, %f, %f]\n", accel.x, accel.y, accel.z);

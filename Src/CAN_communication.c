@@ -96,12 +96,12 @@ void setFrame(uint32_t data, uint8_t data_id, uint32_t timestamp) {
 	TxData[6] = (uint8_t) (timestamp >> 8);
 	TxData[7] = (uint8_t) (timestamp >> 0);
 
+	while (HAL_CAN_IsTxMessagePending(&hcan1, TxMailbox)) {
+		led_set_rgb(1000, 0, 0);
+	}
+
 	if (HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK) {
 		// deal with it (never fails)
-//		led_set_rgb(50, 0, 0);
-	}
-	else {
-//		led_set_rgb(0, 1000, 0);
 	}
 }
 
