@@ -41,6 +41,8 @@ struct bno055_mag_float_t mag;
 //Sensor Board thread
 void TK_sensor_board(void const * argument)
 {
+	led_init();
+	led_set_rgb(1000, 500, 0);
 	osDelay(500);
 
 	INFO("\nInitialising sensors...\n");
@@ -48,17 +50,21 @@ void TK_sensor_board(void const * argument)
 	while(init_bme() != BME280_OK || init_bno() != BNO055_SUCCESS)
 	{
 		INFO("Initialisation failed.\n");
+		led_set_rgb(1000, 0, 0);
 		osDelay(1000);
 		INFO("Retrying...\n");
 	}
 
 	INFO("Initialisation completed successfully\n");
 	state = RUNNING;
+	led_set_rgb(0, 1000, 0);
 
 	for(;;)
 	{
-		fetch_bme();
-		fetch_bno();
+		if(fetch_bme() != BME280_OK || fetch_bno() != BNO055_SUCCESS)
+			led_set_rgb(0, 0, 1000);
+		else
+			led_set_rgb(0, 1000, 0);
 		osDelay(10);
 	}
 }
@@ -78,7 +84,7 @@ int8_t init_bme()
 		return rslt;
 
 	//Always read the current settings before writing
-	rslt = bme280_get_sensor_settings (&bme);
+	rslt = bme280_get_sensor_settings(&bme);
 	if(rslt != BME280_OK)
 		return rslt;
 
@@ -130,9 +136,11 @@ int8_t fetch_bme()
 	rslt = bme280_get_sensor_data(BME280_ALL, &bme_data, &bme);
 	if (!rslt)
 	{
+		setFrame(bme_data.pressure/100, DATA_ID_ALTITUDE, HAL_GetTick());
 		if(!cntr)
 		{
-			sprintf(buf, "%"PRId32" %"PRId32" %"PRId32"\n", bme_data.pressure, bme_data.temperature, bme_data.humidity);
+			sprintf(buf, "Pres: %"PRIu32"\nTemp: %"PRIu32"\nHum: %"PRIu32"\n",
+					bme_data.pressure, bme_data.temperature, bme_data.humidity);
 			INFO(buf);
 		}
 	}
@@ -151,13 +159,23 @@ int8_t fetch_bno()
 	rslt += bno055_convert_float_mag_xyz_uT (&mag);
 	rslt += bno055_convert_float_gyro_xyz_rps (&gyro);
 
-	if(!rslt && !cntr)
+	if(!rslt)
 	{
-		sprintf(buf, "Accel: [%f, %f, %f]\nGyro: [%f, %f, %f]\n Mag: [%f, %f, %f]\n",
-			  accel.x, accel.y, accel.z,
-			  gyro.x, gyro.y, gyro.z,
-			  mag.x, mag.y, mag.z);
-		INFO(buf);
+		setFrame((uint32_t)accel.x, DATA_ID_ACCELERATION_X, HAL_GetTick());
+		setFrame((uint32_t)accel.y, DATA_ID_ACCELERATION_Y, HAL_GetTick());
+		setFrame((uint32_t)accel.z, DATA_ID_ACCELERATION_Z, HAL_GetTick());
+		setFrame((uint32_t)(1000*gyro.x), DATA_ID_GYRO_X, HAL_GetTick());
+		setFrame((uint32_t)(1000*gyro.y), DATA_ID_GYRO_Y, HAL_GetTick());
+		setFrame((uint32_t)(1000*gyro.z), DATA_ID_GYRO_Z, HAL_GetTick());
+		if(!cntr)
+		{
+			sprintf(buf, "Accel: [%f, %f, %f]\n", accel.x, accel.y, accel.z);
+			INFO(buf);
+			sprintf(buf, "Gyro: [%f, %f, %f]\n", gyro.x, gyro.y, gyro.z);
+			INFO(buf);
+			sprintf(buf, "Mag: [%f, %f, %f]\n\n\n", mag.x, mag.y, mag.z);
+			INFO(buf);
+		}
 	}
 
 	cntr = ++cntr < 10 ? cntr : 0;

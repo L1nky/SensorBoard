@@ -98,10 +98,10 @@ void setFrame(uint32_t data, uint8_t data_id, uint32_t timestamp) {
 
 	if (HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK) {
 		// deal with it (never fails)
-		led_set_rgb(50, 0, 0);
+//		led_set_rgb(50, 0, 0);
 	}
 	else {
-		led_set_rgb(0, 1000, 0);
+//		led_set_rgb(0, 1000, 0);
 	}
 }
 
