@@ -4,6 +4,7 @@
 #include "CAN_communication.h"
 #include "lib/ert_lib.h"
 #include "lib/rocket_configuration.h"
+#include "led.h"
 
 #include "stm32f4xx_hal.h"
 #include "cmsis_os.h"

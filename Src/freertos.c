@@ -66,7 +66,27 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+void buzzer_set(uint32_t duration, uint32_t wait) {
+  HAL_GPIO_WritePin (BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_SET);
+  osDelay(duration);
+  HAL_GPIO_WritePin (BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_RESET);
+  osDelay(wait);
+}
 
+void buzzer_init_beep() {
+  buzzer_set(20,100);
+  buzzer_set(20,100);
+  buzzer_set(20,100);
+
+  buzzer_set(100,1000);
+  buzzer_set(100,1000);
+  buzzer_set(100,1000);
+
+}
+
+void buzzer_idle_beep() {
+	buzzer_set(100,10000);
+}
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -149,10 +169,11 @@ void StartDefaultTask(void const * argument)
   MX_FATFS_Init();
 
   /* USER CODE BEGIN StartDefaultTask */
+  buzzer_init_beep();
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    buzzer_idle_beep();
   }
   /* USER CODE END StartDefaultTask */
 }
